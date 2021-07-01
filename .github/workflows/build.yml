@@ -12,9 +12,6 @@ jobs:
         steps:
             - uses: actions/checkout@v2
               with:
-                path: .
-            - uses: actions/checkout@v2
-              with:
                 repository: PaperMC/Paper
                 path: .
             - name: JDK ${{ matrix.java }}
@@ -35,8 +32,13 @@ jobs:
                   
             - name: Change Files
               run: |
-                    ls -l
-                    ./updatePatches.sh
+                    rm patches/server/0123-Properly-fix-item-duplication-bug.patch
+                    rm patches/server/0345-Fix-MC-161754.patch
+                    rm patches/server/0424-Fix-numerous-item-duplication-issues-and-teleport-is.patch
+                    rm patches/server/0556-Expose-world-spawn-angle.patch
+                    rm patches/server/0578-Fix-harming-potion-dupe.patch
+                    rm patches/server/0715-Fix-PlayerDropItemEvent-using-wrong-item.patch
+
             - name: Patch and build
               run: |
                   git config --global user.email "no-reply@github.com"
