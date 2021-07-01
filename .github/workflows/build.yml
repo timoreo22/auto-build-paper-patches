@@ -11,6 +11,8 @@ jobs:
             fail-fast: true
         steps:
             - uses: actions/checkout@v2
+              with:
+                path: .
             - uses: actions/checkout@v2
               with:
                 repository: PaperMC/Paper
