@@ -13,8 +13,8 @@ jobs:
             - uses: actions/checkout@v2
               with:
                 path: .
-            - name: test 1
-              run : ls -la
+            - name: Save Patch
+              run : cp 0228-Removed-Dupe-Patches.patch ../
             - uses: actions/checkout@v2
               with:
                 repository: PaperMC/Paper
@@ -39,7 +39,7 @@ jobs:
                   
             - name: Change Files
               run: |
-                    cp 0228-Removed-Dupe-Patches.patch patches/server/
+                    cp ../0228-Removed-Dupe-Patches.patch patches/server/
             - name: Patch and build
               run: |
                   git config --global user.email "no-reply@github.com"
