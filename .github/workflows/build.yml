@@ -12,8 +12,15 @@ jobs:
         steps:
             - uses: actions/checkout@v2
               with:
+                path: .
+            - name: test 1
+              run : ls -la
+            - uses: actions/checkout@v2
+              with:
                 repository: PaperMC/Paper
                 path: .
+            - name: test 2
+              run : ls -la
             - name: JDK ${{ matrix.java }}
               uses: actions/setup-java@v2
               with:
@@ -32,14 +39,7 @@ jobs:
                   
             - name: Change Files
               run: |
-                    rm patches/server/0123-Properly-fix-item-duplication-bug.patch
-                    rm patches/server/0345-Fix-MC-161754.patch
-                    rm patches/server/0424-Fix-numerous-item-duplication-issues-and-teleport-is.patch
-                    rm patches/server/0556-Expose-world-spawn-angle.patch
-                    rm patches/server/0578-Fix-harming-potion-dupe.patch
-                    rm patches/server/0715-Fix-PlayerDropItemEvent-using-wrong-item.patch
-                    set +H
-                    echo -e "From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001\nFrom: DigitalRegent <misterwener@gmail.com>\nDate: Sat, 11 Apr 2020 13:10:58 +0200\nSubject: [PATCH] Brand support\n\n\ndiff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java\nindex 8d1f8136e5cf1f0ca14ced636c384671ba2f2728..43df92f4da51305edbe5936dc956eb8f7181de9d 100644\n--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java\n+++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java\n@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;\n import com.google.common.primitives.Floats;\n import com.mojang.brigadier.ParseResults;\n import com.mojang.brigadier.StringReader;\n+import io.netty.buffer.Unpooled;\n import io.netty.util.concurrent.Future;\n import io.netty.util.concurrent.GenericFutureListener;\n import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;\n@@ -38,6 +39,7 @@ import net.minecraft.nbt.ListTag;\n import net.minecraft.nbt.StringTag;\n import net.minecraft.nbt.Tag;\n import net.minecraft.network.Connection;\n+import net.minecraft.network.FriendlyByteBuf;\n import net.minecraft.network.chat.ChatType;\n import net.minecraft.network.chat.Component;\n import net.minecraft.network.chat.MutableComponent;\n@@ -259,6 +261,8 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser\n     private static final int MAX_SIGN_LINE_LENGTH = Integer.getInteger(\"Paper.maxSignLength\", 80);\n     private static final long KEEPALIVE_LIMIT = Long.getLong(\"paper.playerconnection.keepalive\", 30) * 1000; // Paper - provide property to set keepalive limit\n \n+    private String clientBrandName = null; // Paper - Brand name\n+\n     public ServerGamePacketListenerImpl(MinecraftServer server, Connection connection, ServerPlayer player) {\n         this.server = server;\n         this.connection = connection;\n@@ -3000,6 +3004,8 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser\n     private static final ResourceLocation CUSTOM_REGISTER = new ResourceLocation(\"register\");\n     private static final ResourceLocation CUSTOM_UNREGISTER = new ResourceLocation(\"unregister\");\n \n+    private static final ResourceLocation MINECRAFT_BRAND = new ResourceLocation(\"brand\"); // Paper - Brand support\n+\n     @Override\n     public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {\n         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.getLevel());\n@@ -3027,6 +3033,15 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser\n             try {\n                 byte[] data = new byte[packet.data.readableBytes()];\n                 packet.data.readBytes(data);\n+                // Paper start - Brand support\n+                if (packet.identifier.equals(MINECRAFT_BRAND)) {\n+                    try {\n+                        this.clientBrandName = new FriendlyByteBuf(Unpooled.copiedBuffer(data)).readUtf(256);\n+                    } catch (StringIndexOutOfBoundsException ex) {\n+                        this.clientBrandName = \"illegal\";\n+                    }\n+                }\n+                // Paper end\n                 this.cserver.getMessenger().dispatchIncomingMessage(this.player.getBukkitEntity(), packet.identifier.toString(), data);\n             } catch (Exception ex) {\n                 ServerGamePacketListenerImpl.LOGGER.error(\"Couldn\\\'t dispatch custom payload\", ex);\n@@ -3036,6 +3051,12 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser\n \n     }\n \n+    // Paper start - brand support\n+    public String getClientBrandName() {\n+        return clientBrandName;\n+    }\n+    // Paper end\n+\n     public final boolean isDisconnected() {\n         return !this.player.joining && !this.connection.isConnected();\n     }\ndiff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java\nindex 5aba300b2aa99bcf17fdf19f8203a52bc814168e..be7b69f8279bbb95d49c5b6ac24fde356d5caaf2 100644\n--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java\n+++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java\n@@ -2421,6 +2421,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {\n         // Paper end\n     };\n \n+    // Paper start - brand support\n+    @Override\n+    public String getClientBrandName() {\n+        return getHandle().connection != null ? getHandle().connection.getClientBrandName() : null;\n+    }\n+    // Paper end\n+\n     public Player.Spigot spigot()\n     {\n         return this.spigot;" > patches/server/0502-Brand-support.patch
+                    cp 0228-Removed-Dupe-Patches.patch patches/server/
             - name: Patch and build
               run: |
                   git config --global user.email "no-reply@github.com"
