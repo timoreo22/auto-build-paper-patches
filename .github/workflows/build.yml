@@ -17,7 +17,7 @@ jobs:
               run : cp 0228-Removed-Dupe-Patches.patch ../
             - uses: actions/checkout@v2
               with:
-                repository: PaperMC/Paper
+                repository: pl3xgaming/Purpur
                 path: .
             - name: test 2
               run : ls -la
