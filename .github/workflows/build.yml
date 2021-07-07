@@ -18,6 +18,7 @@ jobs:
             - uses: actions/checkout@v2
               with:
                 repository: pl3xgaming/Purpur
+                ref: 'ver/1.17.1'
                 path: .
             - name: test 2
               run : ls -la
