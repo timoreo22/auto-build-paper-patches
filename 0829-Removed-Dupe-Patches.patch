@@ -1,27 +1,27 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: timoreo <timo.oreo34@gmail.com>
-Date: Wed, 7 Jul 2021 18:01:50 +0200
+Date: Tue, 7 Dec 2021 07:17:24 +0100
 Subject: [PATCH] Removed Dupe Patches
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 33f41de3aabaee37dbd92ad17d8dc65a60fef427..c022ae11f911e81c678b2a9648d8b695827ec005 100644
+index 7b23535a680d2a8534dcb8dd87770f66fb982c13..5fe8d45cc5d61d2cb8f5ccf61319fab685682509 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-@@ -2430,7 +2430,7 @@ public class ServerPlayer extends Player {
+@@ -2388,7 +2388,7 @@ public class ServerPlayer extends Player {
  
      @Override
      public boolean isImmobile() {
--        return super.isImmobile() || frozen || (this.connection != null && this.connection.isDisconnected()); // Paper // Purpur
-+       return super.isImmobile() || frozen || !this.getBukkitEntity().isOnline(); // Purpur
+-        return super.isImmobile() || (this.connection != null && this.connection.isDisconnected()); // Paper
++        return super.isImmobile();
      }
  
-     // Purpur start
+     @Override
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 0d3e73240e5d363427379f50ecb163482c6f1bfc..65ff946dbfd451f82d1493ccf7ccfaf412e6d540 100644
+index 348cecfe1c3ac1debe98e2fcc756c7e32a3187df..5d1614b6d850d01347153e8588d009eb3d1d62e3 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3144,7 +3144,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
+@@ -3177,7 +3177,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
      // Paper end
  
      public final boolean isDisconnected() {
@@ -31,10 +31,10 @@ index 0d3e73240e5d363427379f50ecb163482c6f1bfc..65ff946dbfd451f82d1493ccf7ccfaf4
      // CraftBukkit end
  
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index a75b0a7d8bbb6ed0871865c70b5a5256a4c61cbe..033c0958b08cefffb4936cde0da991f6ba5dc441 100644
+index 821c34a48127802947e293c4599e0cdaea3c040e..19b2736eb6507a6f013200c66a500bef4f89b807 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -2214,12 +2214,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+@@ -2411,12 +2411,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
          } else {
              // CraftBukkit start - Capture drops for death event
              if (this instanceof net.minecraft.world.entity.LivingEntity && !((net.minecraft.world.entity.LivingEntity) this).forceDrops) {
@@ -49,7 +49,7 @@ index a75b0a7d8bbb6ed0871865c70b5a5256a4c61cbe..033c0958b08cefffb4936cde0da991f6
  
              entityitem.setDefaultPickUpDelay();
              // CraftBukkit start
-@@ -2979,12 +2978,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+@@ -3171,12 +3170,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
      @Nullable
      public Entity teleportTo(ServerLevel worldserver, BlockPos location) {
          // CraftBukkit end
@@ -62,7 +62,7 @@ index a75b0a7d8bbb6ed0871865c70b5a5256a4c61cbe..033c0958b08cefffb4936cde0da991f6
          if (this.level instanceof ServerLevel && !this.isRemoved()) {
              this.level.getProfiler().push("changeDimension");
              // CraftBukkit start
-@@ -3005,11 +2998,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+@@ -3216,11 +3209,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
                  // CraftBukkit end
  
                  this.level.getProfiler().popPush("reloading");
@@ -71,33 +71,33 @@ index a75b0a7d8bbb6ed0871865c70b5a5256a4c61cbe..033c0958b08cefffb4936cde0da991f6
 -                    ((Mob) this).dropLeash(true, true); // Paper drop lead
 -                }
 -                // Paper end
-                 Entity entity = this.getType().create((Level) worldserver);
+                 Entity entity = this.getType().create(worldserver);
  
                  if (entity != null) {
-@@ -3023,6 +3011,9 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+@@ -3234,6 +3222,9 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
                      // CraftBukkit start - Forward the CraftEntity to the new entity
                      this.getBukkitEntity().setHandle(entity);
                      entity.bukkitEntity = this.getBukkitEntity();
-+                    if (this instanceof Mob) {
-+                        ((Mob) this).dropLeash(true, false); // Unleash to prevent duping of leads.
-+                    }
++		    if(this instanceof Mob){
++			((Mob) this).dropLeash(true, false); // Unleash to prevent duping of leads.
++		    }
                      // CraftBukkit end
                  }
  
-@@ -3147,7 +3138,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+@@ -3354,7 +3345,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
      }
  
      public boolean canChangeDimensions() {
--        return isAlive() && valid && (level.purpurConfig.entitiesCanUsePortals || this instanceof ServerPlayer); // Paper // Purpur
-+        return (level.purpurConfig.entitiesCanUsePortals || this instanceof ServerPlayer); // Paper // Purpur
+-        return isAlive() && valid; // Paper
++        return true;
      }
  
      public float getBlockExplosionResistance(Explosion explosion, BlockGetter world, BlockPos pos, BlockState blockState, FluidState fluidState, float max) {
 diff --git a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
-index 6d08c8c31a32ea38f06410fbaddf19b95bec7c6f..13ec8823b2cbb78608b84761ab40ec87a4409965 100644
+index e5ef24d92de21c4c0e6a98e06985e52d47bfdce0..b89d60150c9b59ca2c3149b308423f4e40e7655d 100644
 --- a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
-@@ -655,7 +655,7 @@ public class ArmorStand extends LivingEntity {
+@@ -610,7 +610,7 @@ public class ArmorStand extends LivingEntity {
          for (i = 0; i < this.handItems.size(); ++i) {
              itemstack = (ItemStack) this.handItems.get(i);
              if (!itemstack.isEmpty()) {
@@ -106,7 +106,7 @@ index 6d08c8c31a32ea38f06410fbaddf19b95bec7c6f..13ec8823b2cbb78608b84761ab40ec87
                  this.handItems.set(i, ItemStack.EMPTY);
              }
          }
-@@ -663,7 +663,7 @@ public class ArmorStand extends LivingEntity {
+@@ -618,7 +618,7 @@ public class ArmorStand extends LivingEntity {
          for (i = 0; i < this.armorItems.size(); ++i) {
              itemstack = (ItemStack) this.armorItems.get(i);
              if (!itemstack.isEmpty()) {
@@ -116,10 +116,10 @@ index 6d08c8c31a32ea38f06410fbaddf19b95bec7c6f..13ec8823b2cbb78608b84761ab40ec87
              }
          }
 diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index f8cf130aee9bbdb62b23809b58eece968a01d3da..46e9425f3aae8dfa066b1d5012008266715b8b79 100644
+index 2c00a766130a7f682fc6c4c74321e10637ca7932..7bfc17261ca1bcd811ea4f5ab995f03cbf7b005f 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
-@@ -746,11 +746,6 @@ public abstract class Player extends LivingEntity {
+@@ -708,11 +708,6 @@ public abstract class Player extends LivingEntity {
              }
  
              double d0 = this.getEyeY() - 0.30000001192092896D;
@@ -131,24 +131,11 @@ index f8cf130aee9bbdb62b23809b58eece968a01d3da..46e9425f3aae8dfa066b1d5012008266
              ItemEntity entityitem = new ItemEntity(this.level, this.getX(), d0, this.getZ(), stack);
  
              entityitem.setPickUpDelay(40);
-diff --git a/src/main/java/net/minecraft/world/inventory/HorseInventoryMenu.java b/src/main/java/net/minecraft/world/inventory/HorseInventoryMenu.java
-index ffc596d8db77aaeed43f79b895bf4a1c7baeeab2..f3e17f00f09feb4df4274b09bc7fa3c3022a5fbb 100644
---- a/src/main/java/net/minecraft/world/inventory/HorseInventoryMenu.java
-+++ b/src/main/java/net/minecraft/world/inventory/HorseInventoryMenu.java
-@@ -95,7 +95,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
- 
-     @Override
-     public boolean stillValid(Player player) {
--        return !this.horse.hasInventoryChanged(this.horseContainer) && this.horseContainer.stillValid(player) && (this.horse.isAlive() && this.horse.valid) && this.horse.distanceTo((Entity) player) < 8.0F; // Paper - Fix MC-161754
-+        return !this.horse.hasInventoryChanged(this.horseContainer) && this.horseContainer.stillValid(player) && this.horse.isAlive() && this.horse.distanceTo((Entity) player) < 8.0F;
-     }
- 
-     private boolean hasChest(AbstractHorse horse) {
 diff --git a/src/main/java/net/minecraft/world/item/PotionItem.java b/src/main/java/net/minecraft/world/item/PotionItem.java
-index 12a29323d99dcc7880fe3c7c9709a755d9cbf43e..9014bf545205504bee2d727399d39090ebe3d210 100644
+index 4b5c9da0e858016c1a3afcb6eaa1ff4cbf47739e..166f7483163a0cf62b000764d635ec2ee36a5036 100644
 --- a/src/main/java/net/minecraft/world/item/PotionItem.java
 +++ b/src/main/java/net/minecraft/world/item/PotionItem.java
-@@ -42,7 +42,6 @@ public class PotionItem extends Item {
+@@ -41,7 +41,6 @@ public class PotionItem extends Item {
              CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer) entityhuman, stack);
          }
  
@@ -156,7 +143,7 @@ index 12a29323d99dcc7880fe3c7c9709a755d9cbf43e..9014bf545205504bee2d727399d39090
          if (!world.isClientSide) {
              List<MobEffectInstance> list = PotionUtils.getMobEffects(stack);
              Iterator iterator = list.iterator();
-@@ -51,7 +50,7 @@ public class PotionItem extends Item {
+@@ -50,7 +49,7 @@ public class PotionItem extends Item {
                  MobEffectInstance mobeffect = (MobEffectInstance) iterator.next();
  
                  if (mobeffect.getEffect().isInstantenous()) {
@@ -165,7 +152,7 @@ index 12a29323d99dcc7880fe3c7c9709a755d9cbf43e..9014bf545205504bee2d727399d39090
                  } else {
                      user.addEffect(new MobEffectInstance(mobeffect), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.POTION_DRINK); // CraftBukkit
                  }
-@@ -65,18 +64,7 @@ public class PotionItem extends Item {
+@@ -64,18 +63,7 @@ public class PotionItem extends Item {
              }
          }
  
@@ -185,16 +172,14 @@ index 12a29323d99dcc7880fe3c7c9709a755d9cbf43e..9014bf545205504bee2d727399d39090
                  return new ItemStack(Items.GLASS_BOTTLE);
              }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index f60ef0605163ecf50d9f61a73a84146d214aaf19..a4a4121778a656f8778eb96710212e2fa71d83e4 100644
+index 5395dbf1c9bedc1e3e13f6661affdfd94fded502..c31b1411a4fa3f5c474b99c9f032cd255993deff 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -862,8 +862,7 @@ public class CraftEventFactory {
-         for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
+@@ -874,7 +874,6 @@ public class CraftEventFactory {
              if (stack == null || stack.getType() == Material.AIR || stack.getAmount() == 0) continue;
  
--            world.dropItem(entity.getLocation(), stack); // Paper - note: dropItem already clones due to this being bukkit -> NMS
+             world.dropItem(entity.getLocation(), stack); // Paper - note: dropItem already clones due to this being bukkit -> NMS
 -            if (stack instanceof CraftItemStack) stack.setAmount(0); // Paper - destroy this item - if this ever leaks due to game bugs, ensure it doesn't dupe, but don't nuke bukkit stacks of manually added items
-+            world.dropItem(entity.getLocation(), stack);
          }
  
          return event;
