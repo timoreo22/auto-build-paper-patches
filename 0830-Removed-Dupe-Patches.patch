@@ -18,10 +18,10 @@ index 7b23535a680d2a8534dcb8dd87770f66fb982c13..5fe8d45cc5d61d2cb8f5ccf61319fab6
  
      @Override
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 348cecfe1c3ac1debe98e2fcc756c7e32a3187df..5d1614b6d850d01347153e8588d009eb3d1d62e3 100644
+index d85f5817f1aaebff3d93ee472d4580af72f7eae2..79242c539a903433ca566fe551216ddea2e6825d 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3177,7 +3177,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
+@@ -3182,7 +3182,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
      // Paper end
  
      public final boolean isDisconnected() {
@@ -31,7 +31,7 @@ index 348cecfe1c3ac1debe98e2fcc756c7e32a3187df..5d1614b6d850d01347153e8588d009eb
      // CraftBukkit end
  
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 821c34a48127802947e293c4599e0cdaea3c040e..19b2736eb6507a6f013200c66a500bef4f89b807 100644
+index 8ea81f6ac7503c68f0aea34802843bc545f46db0..dfc177a830fb3de7118798ba1f4dfc108ebb6fca 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -2411,12 +2411,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
@@ -49,7 +49,7 @@ index 821c34a48127802947e293c4599e0cdaea3c040e..19b2736eb6507a6f013200c66a500bef
  
              entityitem.setDefaultPickUpDelay();
              // CraftBukkit start
-@@ -3171,12 +3170,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
+@@ -3178,12 +3177,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
      @Nullable
      public Entity teleportTo(ServerLevel worldserver, BlockPos location) {
          // CraftBukkit end
@@ -62,7 +62,7 @@ index 821c34a48127802947e293c4599e0cdaea3c040e..19b2736eb6507a6f013200c66a500bef
          if (this.level instanceof ServerLevel && !this.isRemoved()) {
              this.level.getProfiler().push("changeDimension");
              // CraftBukkit start
-@@ -3216,11 +3209,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
+@@ -3223,11 +3216,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
                  // CraftBukkit end
  
                  this.level.getProfiler().popPush("reloading");
@@ -74,17 +74,7 @@ index 821c34a48127802947e293c4599e0cdaea3c040e..19b2736eb6507a6f013200c66a500bef
                  Entity entity = this.getType().create(worldserver);
  
                  if (entity != null) {
-@@ -3234,6 +3222,9 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
-                     // CraftBukkit start - Forward the CraftEntity to the new entity
-                     this.getBukkitEntity().setHandle(entity);
-                     entity.bukkitEntity = this.getBukkitEntity();
-+		    if(this instanceof Mob){
-+			((Mob) this).dropLeash(true, false); // Unleash to prevent duping of leads.
-+		    }
-                     // CraftBukkit end
-                 }
- 
-@@ -3354,7 +3345,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
+@@ -3361,7 +3349,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
      }
  
      public boolean canChangeDimensions() {
@@ -116,7 +106,7 @@ index e5ef24d92de21c4c0e6a98e06985e52d47bfdce0..b89d60150c9b59ca2c3149b308423f4e
              }
          }
 diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index 2c00a766130a7f682fc6c4c74321e10637ca7932..7bfc17261ca1bcd811ea4f5ab995f03cbf7b005f 100644
+index 570d2325997e2465a8e17803ea882bc07ca64c38..8ab24ab527767387c85659968cc4789b4183b109 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
 @@ -708,11 +708,6 @@ public abstract class Player extends LivingEntity {
@@ -172,10 +162,10 @@ index 4b5c9da0e858016c1a3afcb6eaa1ff4cbf47739e..166f7483163a0cf62b000764d635ec2e
                  return new ItemStack(Items.GLASS_BOTTLE);
              }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 5395dbf1c9bedc1e3e13f6661affdfd94fded502..c31b1411a4fa3f5c474b99c9f032cd255993deff 100644
+index c667baa2da8222eb66344c8f1cc0fed416c4df01..97a2cec51bef5a5d79f39705e9bf9e7395235294 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -874,7 +874,6 @@ public class CraftEventFactory {
+@@ -880,7 +880,6 @@ public class CraftEventFactory {
              if (stack == null || stack.getType() == Material.AIR || stack.getAmount() == 0) continue;
  
              world.dropItem(entity.getLocation(), stack); // Paper - note: dropItem already clones due to this being bukkit -> NMS
