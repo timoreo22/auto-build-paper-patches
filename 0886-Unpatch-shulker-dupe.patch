@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: timoreo <timo.oreo34@gmail.com>
+Date: Tue, 29 Mar 2022 15:10:00 +0200
+Subject: [PATCH] Unpatch shulker dupe
+
+
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 68e1ab0057452228817ecbc6556338a8906c2538..3cb61128dfd796d8c22e04c354d385ebe88d866e 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -2633,7 +2633,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.getLevel());
+         if (this.player.isImmobile()) return; // CraftBukkit
+         this.player.resetLastActionTime();
+-        if (this.player.containerMenu.containerId == packet.getContainerId() && this.player.containerMenu.stillValid(this.player)) { // CraftBukkit
++        if (this.player.containerMenu.containerId == packet.getContainerId()) {
+             boolean cancelled = this.player.isSpectator(); // CraftBukkit - see below if
+             if (false/*this.player.isSpectator()*/) { // CraftBukkit
+                 this.player.containerMenu.sendAllDataToRemote();
