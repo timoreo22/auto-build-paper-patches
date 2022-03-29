@@ -1,6 +1,6 @@
 
 name: Build Paper
-on: [workflow_dispatch, repository_dispatch]
+on: [workflow_dispatch, repository_dispatch, push]
 
 jobs:
     build:
