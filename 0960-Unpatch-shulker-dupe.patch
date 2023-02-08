@@ -1,14 +1,14 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: timoreo <timo.oreo34@gmail.com>
-Date: Tue, 29 Mar 2022 15:10:00 +0200
+From: timoreo <contact@timoreo.fr>
+Date: Wed, 8 Feb 2023 09:22:17 +0100
 Subject: [PATCH] Unpatch shulker dupe
 
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 68e1ab0057452228817ecbc6556338a8906c2538..3cb61128dfd796d8c22e04c354d385ebe88d866e 100644
+index 3472f7f9b98d6d9c9f6465872803ef17fa67486d..2774dec06cbe6c27e70368498a552410eddd9fb6 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -2633,7 +2633,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
+@@ -2930,11 +2930,11 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.getLevel());
          if (this.player.isImmobile()) return; // CraftBukkit
          this.player.resetLastActionTime();
@@ -17,3 +17,8 @@ index 68e1ab0057452228817ecbc6556338a8906c2538..3cb61128dfd796d8c22e04c354d385eb
              boolean cancelled = this.player.isSpectator(); // CraftBukkit - see below if
              if (false/*this.player.isSpectator()*/) { // CraftBukkit
                  this.player.containerMenu.sendAllDataToRemote();
+-            } else if (!this.player.containerMenu.stillValid(this.player)) {
++            } else if (false/*!this.player.containerMenu.stillValid(this.player)*/) { // Unpatch Shulker Dupe
+                 ServerGamePacketListenerImpl.LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
+             } else {
+                 int i = packet.getSlotNum();
